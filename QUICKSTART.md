@@ -1,162 +1,87 @@
-# Quick Start Guide
+# Quick Start - Audio to Jira
 
-## Prerequisites Check
+Simple system to extract text from audio and create Jira issues.
 
-Before starting, ensure you have:
-- ✅ Python 3.9+ installed
-- ✅ Node.js 18+ installed
-- ✅ Supabase account (free tier works!)
-- ✅ FFmpeg installed
+## Setup
 
-## Step-by-Step Setup
-
-### 1. Set Up Supabase (No Local Database Needed!)
-
-**Create a Supabase account and project:**
-
-1. Go to [supabase.com](https://supabase.com) and sign up (free tier available)
-2. Click "New Project"
-3. Fill in project details:
-   - **Name**: `meeting-secretary` (or your choice)
-   - **Database Password**: Create a strong password (save this!)
-   - **Region**: Choose closest to you
-4. Wait 1-2 minutes for project creation
-
-**Get your connection string:**
-
-1. In Supabase dashboard → **Settings** → **Database**
-2. Scroll to **Connection string** section
-3. Copy the connection string (URI format)
-4. It looks like: `postgresql://postgres:[YOUR-PASSWORD]@db.[PROJECT-REF].supabase.co:5432/postgres`
-5. Replace `[YOUR-PASSWORD]` with the password you set
-
-**Note:** No local database installation needed! Supabase handles everything.
-
-### 2. Backend Setup
+### 1. Install Dependencies
 
 ```bash
 cd backend
-
-# Create virtual environment
 python -m venv venv
-
-# Activate virtual environment
-# On Windows:
-venv\Scripts\activate
-# On macOS/Linux:
-source venv/bin/activate
-
-# Install dependencies
+source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
-
-# Copy environment file
-cp .env.example .env
-# Edit .env with your settings (minimum: DATABASE_URL, SECRET_KEY)
-
-# Initialize database (create tables)
-python init_db.py
-
-# Or use Alembic migrations
-alembic upgrade head
-
-# Start backend server
-python run.py
-# Or: uvicorn app.main:app --reload --port 8000
 ```
 
-Backend will be running at `http://localhost:8000`
+### 2. Configure Environment
 
-### 3. Frontend Setup
+Create `backend/.env`:
 
-```bash
-cd frontend
-
-# Install dependencies
-npm install
-
-# Start development server
-npm run dev
-```
-
-Frontend will be running at `http://localhost:3000`
-
-## First Steps
-
-1. **Register/Login**: Go to `http://localhost:3000` and create an account
-2. **Upload a Meeting**: Upload an audio file (MP3, WAV, etc.)
-3. **Wait for Processing**: The system will transcribe and extract action items
-4. **Review Tasks**: Check the Tasks page for extracted items
-5. **Sync to External**: Configure Jira/Trello integration to sync tasks
-
-## Environment Variables (Minimum Required)
-
-In `backend/.env`:
 ```env
-# Update with your Supabase connection string
-DATABASE_URL=postgresql://postgres:YOUR_PASSWORD@db.YOUR_PROJECT_REF.supabase.co:5432/postgres
-SECRET_KEY=your-secret-key-here
+# Groq API (for action item extraction)
+GROQ_API_KEY=your-groq-api-key
 
-# Groq API for LLM extraction (recommended - fast and affordable)
-GROQ_API_KEY=your-groq-api-key  # Get from console.groq.com - see SETUP_GROQ.md
-LLM_MODEL=llama-3.1-70b-versatile  # Optional: Groq model name
-```
+# Jira Configuration
+JIRA_BASE_URL=https://your-domain.atlassian.net
+JIRA_EMAIL=your-email@example.com
+JIRA_API_TOKEN=your-jira-api-token
 
-**Need Groq API key?** See `SETUP_GROQ.md` for step-by-step setup instructions.
-
-**Note:** 
-- Replace `YOUR_PASSWORD` with your Supabase database password
-- Replace `YOUR_PROJECT_REF` with your Supabase project reference ID
-- Get the connection string from Supabase Dashboard → Settings → Database
-
-## Local-Only Mode
-
-For privacy, enable local-only mode:
-```env
-ENABLE_LOCAL_MODE=true
+# Whisper (optional)
+WHISPER_MODEL=base
 USE_LOCAL_WHISPER=true
 ```
 
-This requires:
-- Local Whisper model (downloaded automatically)
-- Local LLM (Ollama) for extraction
+### 3. Run Server
 
-## Troubleshooting
+```bash
+python run.py
+```
 
-### Database Connection Error
-- **Verify Supabase project is active**:
-  - Go to Supabase dashboard
-  - Check if project is paused (free tier pauses after 1 week inactivity)
-  - Resume project if needed
-- **Check connection string format**:
-  - Must be: `postgresql://postgres:PASSWORD@db.REF.supabase.co:5432/postgres`
-  - No spaces, proper URL encoding
-  - Password might need URL encoding if it has special characters
-- **Verify password**:
-  - Reset password in Supabase Dashboard → Settings → Database if needed
-- **Check Supabase dashboard**:
-  - Go to Table Editor to see if connection works
-  - Check SQL Editor to run test queries
+Server runs on `http://localhost:8000`
 
-**Need detailed Supabase setup?** See `SETUP_SUPABASE.md` for complete instructions.
+## Usage
 
-### Whisper Model Download
-- First run will download the Whisper model (can take time)
-- Models are cached for future use
+### Using curl
 
-### Audio Processing Fails
-- Ensure FFmpeg is installed and in PATH
-- Check audio file format (supported: MP3, WAV, M4A, OGG, FLAC)
-- Verify file size is under 100MB
+```bash
+curl -X POST "http://localhost:8000/upload?jira_project_key=PROJ" \
+  -F "file=@meeting.mp3"
+```
 
-### Frontend Can't Connect to Backend
-- Ensure backend is running on port 8000
-- Check CORS settings in backend config
-- Verify API_BASE_URL in frontend
+### Using Python
 
-## Next Steps
+```python
+import requests
 
-- Configure Jira/Trello integrations for task syncing
-- Set up email notifications (if using email auth)
-- Customize extraction prompts for your use case
-- Deploy to production (see README.md for production setup)
+url = "http://localhost:8000/upload"
+files = {"file": open("meeting.mp3", "rb")}
+params = {"jira_project_key": "PROJ"}
 
+response = requests.post(url, files=files, params=params)
+print(response.json())
+```
+
+## Get API Keys
+
+### Groq API Key
+1. Go to [console.groq.com](https://console.groq.com)
+2. Sign up and create API key
+
+### Jira API Token
+**Full guide:** See `SETUP_JIRA.md` for detailed instructions
+
+**Quick steps:**
+1. Go to [id.atlassian.com/manage-profile/security/api-tokens](https://id.atlassian.com/manage-profile/security/api-tokens)
+2. Click "Create API token"
+3. Copy token (shown only once!)
+4. Find your Jira URL (e.g., `https://company.atlassian.net`)
+5. Add to `backend/.env`:
+   ```env
+   JIRA_BASE_URL=https://yourcompany.atlassian.net
+   JIRA_EMAIL=your.email@company.com
+   JIRA_API_TOKEN=your-token-here
+   ```
+
+## That's it! 🎉
+
+Just upload audio files and they'll automatically become Jira issues.

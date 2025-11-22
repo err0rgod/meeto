@@ -79,8 +79,18 @@ class JiraService:
             auth=HTTPBasicAuth(self.email, self.api_token),
             headers={"Accept": "application/json", "Content-Type": "application/json"}
         )
-        
-        response.raise_for_status()
+
+        try:
+            response.raise_for_status()
+        except requests.HTTPError as e:
+            # Include response body to aid debugging (Jira returns helpful JSON)
+            body = None
+            try:
+                body = response.json()
+            except Exception:
+                body = response.text
+            raise RuntimeError(f"Jira API error {response.status_code}: {body}") from e
+
         return response.json()
     
     def get_issue(self, issue_key: str) -> Dict[str, Any]:
@@ -95,6 +105,87 @@ class JiraService:
         
         response.raise_for_status()
         return response.json()
+
+    def get_project(self, project_key: str) -> Dict[str, Any]:
+        """
+        Get project details by key. Raises RuntimeError with Jira body on failure.
+        """
+        url = f"{self.base_url.rstrip('/')}/rest/api/3/project/{project_key}"
+
+        response = requests.get(
+            url,
+            auth=HTTPBasicAuth(self.email, self.api_token),
+            headers={"Accept": "application/json"}
+        )
+
+        try:
+            response.raise_for_status()
+        except requests.HTTPError as e:
+            body = None
+            try:
+                body = response.json()
+            except Exception:
+                body = response.text
+            raise RuntimeError(f"Jira project lookup error {response.status_code}: {body}") from e
+
+        return response.json()
+
+    def find_user(self, query: str, project_key: Optional[str] = None) -> Optional[str]:
+        """
+        Try to find a Jira user accountId given a query (email or display name fragment).
+
+        Strategy:
+        - If project_key provided, try assignable search first (ensures user can be assigned in project).
+        - Fall back to global user search endpoint.
+
+        Returns accountId string if found, otherwise None.
+        """
+        if not query:
+            return None
+
+        # Try assignable search if project provided
+        try:
+            if project_key:
+                url = f"{self.base_url.rstrip('/')}/rest/api/3/user/assignable/search"
+                params = {"project": project_key, "query": query}
+                response = requests.get(
+                    url,
+                    params=params,
+                    auth=HTTPBasicAuth(self.email, self.api_token),
+                    headers={"Accept": "application/json"}
+                )
+
+                if response.status_code == 200:
+                    try:
+                        users = response.json()
+                        if users:
+                            return users[0].get("accountId")
+                    except Exception:
+                        pass
+
+            # Fallback to global user search
+            url = f"{self.base_url.rstrip('/')}/rest/api/3/user/search"
+            params = {"query": query}
+            response = requests.get(
+                url,
+                params=params,
+                auth=HTTPBasicAuth(self.email, self.api_token),
+                headers={"Accept": "application/json"}
+            )
+
+            if response.status_code == 200:
+                try:
+                    users = response.json()
+                    if users:
+                        return users[0].get("accountId")
+                except Exception:
+                    pass
+
+        except Exception:
+            # Swallow network/permissions errors and return None - caller will skip assignee
+            return None
+
+        return None
     
     def update_issue(self, issue_key: str, updates: Dict[str, Any]) -> Dict[str, Any]:
         """Update an existing issue"""

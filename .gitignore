@@ -35,6 +35,10 @@ build/
 *.sqlite
 *.sqlite3
 
+# File-based storage (contains user data)
+storage/
+!storage/.gitkeep
+
 # Uploads and transcripts
 uploads/
 transcripts/
