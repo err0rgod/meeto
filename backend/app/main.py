@@ -48,7 +48,7 @@ async def root():
     <!DOCTYPE html>
     <html>
     <head>
-        <title>Audio to Jira</title>
+        <title>Audio Integrator</title>
         <style>
             * { margin: 0; padding: 0; box-sizing: border-box; }
             body {
@@ -159,7 +159,7 @@ async def root():
     </head>
     <body>
         <div class="container">
-            <h1>🎤 Audio to Jira</h1>
+            <h1>Audio Integrator</h1>
             <p class="subtitle">Upload audio or transcript and create Jira issues automatically</p>
             
             <form id="uploadForm">
