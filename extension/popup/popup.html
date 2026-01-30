@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Meeto Recorder</title>
+    <style>
+        body {
+            width: 300px;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: center;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        #startBtn {
+            background-color: #28a745;
+            color: white;
+        }
+
+        #stopBtn {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        #stopBtn:disabled {
+            background-color: #e9ecef;
+            color: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .status {
+            margin-top: 15px;
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
+    <script src="popup.js"></script>
+</head>
+
+<body>
+    <h2>Meeto Recorder</h2>
+    <div id="controls">
+        <button id="startBtn">Start Recording</button>
+        <button id="stopBtn" disabled>Stop Recording</button>
+    </div>
+    <div class="status" id="statusText">Ready to record</div>
+</body>
+
+</html>

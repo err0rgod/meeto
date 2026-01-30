@@ -1,0 +1,32 @@
+{
+    "manifest_version": 3,
+    "name": "Meeto - Meeting Recorder",
+    "version": "1.0",
+    "description": "Record Google Meet audio and sync with Jira.",
+    "permissions": [
+        "tabCapture",
+        "offscreen",
+        "activeTab",
+        "scripting"
+    ],
+    "host_permissions": [
+        "http://localhost:8000/*",
+        "https://meet.google.com/*"
+    ],
+    "background": {
+        "service_worker": "background.js"
+    },
+    "action": {
+        "default_popup": "popup/popup.html"
+    },
+    "web_accessible_resources": [
+        {
+            "resources": [
+                "offscreen.html"
+            ],
+            "matches": [
+                "<all_urls>"
+            ]
+        }
+    ]
+}

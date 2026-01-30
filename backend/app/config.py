@@ -23,8 +23,11 @@ class Settings(BaseSettings):
     GROQ_API_KEY: Optional[str] = None
     LLM_MODEL: str = "llama-3.1-70b-versatile"
     
-    # OpenAI (for Whisper transcription)
-    OPENAI_API_KEY: Optional[str] = None
+    # AssemblyAI (for Transcription)
+    ASSEMBLYAI_API_KEY: Optional[str] = None
+    
+    # Local Application Mode
+    ENABLE_LOCAL_MODE: bool = False
     
     # Jira Integration
     JIRA_BASE_URL: Optional[str] = None
@@ -51,7 +54,8 @@ except Exception as e:
         CORS_ORIGINS = ["*"]
         GROQ_API_KEY = os.getenv("GROQ_API_KEY")
         LLM_MODEL = os.getenv("LLM_MODEL", "llama-3.1-70b-versatile")
-        OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+        ASSEMBLYAI_API_KEY = os.getenv("ASSEMBLYAI_API_KEY")
+        ENABLE_LOCAL_MODE = os.getenv("ENABLE_LOCAL_MODE", "False").lower() == "true"
         JIRA_BASE_URL = os.getenv("JIRA_BASE_URL")
         JIRA_EMAIL = os.getenv("JIRA_EMAIL")
         JIRA_API_TOKEN = os.getenv("JIRA_API_TOKEN")

@@ -8,8 +8,8 @@ python-multipart==0.0.6
 # Note: If you get Rust/Cargo errors with pydantic-core on Python 3.14,
 # try installing pre-built wheel or use Python 3.11/3.12 instead
 
-# OpenAI (for Whisper API transcription)
-openai==1.3.0
+# AssemblyAI (for Transcription)
+assemblyai==0.20.0
 
 # Groq (for LLM action item extraction)
 groq>=0.4.2
@@ -21,3 +21,6 @@ requests==2.31.0
 # Utilities
 python-dotenv==1.0.0
 
+
+# Database
+sqlalchemy==2.0.23
